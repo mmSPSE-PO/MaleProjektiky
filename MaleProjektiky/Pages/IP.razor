@@ -1,0 +1,82 @@
+﻿@page "/IP"
+
+<h3>IP</h3>
+<p>
+    <input @bind="ipAdd" placeholder="0.0.0.0"/>
+    <input @bind="prefix" placeholder="/0"/>
+</p>
+<button @onclick="showResults">Show results</button>
+
+<p>
+    Network: @network
+</p>
+<p>
+    Broadcast: @broadcast
+</p>
+<p>
+    Subnet Mask: @subnetMask
+</p>
+<p>
+    Hosts: @Hosts
+</p>
+<p>
+    IP count: @ipCount
+</p>
+
+@code {
+    private string ipAdd { get; set; }
+    private string prefix { get; set; }
+    private int Hosts { get; set; }
+    private int ipCount { get; set; }
+    private string subnetMask { get; set; }
+    private string broadcast { get; set; }
+    private string network { get; set; }
+
+    private void showResults()
+    {
+        subnetMask = "";
+        broadcast = "";
+        network = "";
+        ipCount = 0;
+
+        if(ipAdd!=null && prefix != null)
+        {
+            var ipAddress = "";
+            var pref = Convert.ToInt32(prefix.Replace("/",""));
+            int i = 3;
+            foreach(var item in ipAdd.Split("."))
+            {
+                byte number = Convert.ToByte(item);
+                ipAddress += Convert.ToString(number, 2).PadLeft(8,'0');
+                ipCount += (int)Math.Pow(256,i)*Convert.ToInt32(item);
+                --i;
+            }
+            Hosts = (int)Math.Pow(2,32-Convert.ToInt32(prefix.Replace("/", "")))-2;
+            string pomocNetwork="";
+            string pomocBroadcast="";
+            string pomocMask="";
+
+            for (i = 0; i < ipAddress.Length; i++)
+            {
+                if (i < pref)
+                {
+                    pomocNetwork += ipAddress[i];
+                    pomocBroadcast += ipAddress[i];
+                    pomocMask += "1";
+                }
+                else
+                {
+                    pomocNetwork += "0";
+                    pomocBroadcast += "1";
+                    pomocMask += "0";
+                }
+                if ((i + 1) % 8 == 0)
+                {
+                    subnetMask += "." + Convert.ToInt32(pomocMask,2); pomocMask = "";
+                    network += "." + Convert.ToInt32(pomocNetwork, 2); pomocNetwork = "";
+                    broadcast += "." + Convert.ToInt32(pomocBroadcast, 2); pomocBroadcast = "";
+                }
+            }
+        }
+    }
+}
